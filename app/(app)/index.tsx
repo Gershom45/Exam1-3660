@@ -1,9 +1,9 @@
 import { Text, View, SafeAreaView, FlatList, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
-import {config, database} from '../lib/appwrite'
-import TextCustom from "./components/TextCustom";
-import ListItem from "./components/ListItem";
-import { client } from "../lib/appwrite";
+import {config, database} from '../../lib/appwrite'
+import TextCustom from "../components/TextCustom";
+import ListItem from "../components/ListItem";
+import { client } from "../../lib/appwrite";
 
 export default function Index() {
   const [tasks, setTasks] = useState([])
