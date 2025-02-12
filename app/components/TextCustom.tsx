@@ -1,10 +1,14 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { Text, TextStyle } from 'react-native';
+import React from 'react';
 
-const TextCustom = ({style, fontSize=16, children}) => {
-  return (
-      <Text style={{...style, fontSize}}>{children}</Text>
-  )
+interface TextCustomProps {
+  style?: TextStyle; // Make style optional
+  fontSize?: number;
+  children: React.ReactNode;
 }
 
-export default TextCustom
+const TextCustom: React.FC<TextCustomProps> = ({ style = {}, fontSize = 16, children }) => {
+  return <Text style={[style, { fontSize }]}>{children}</Text>;
+};
+
+export default TextCustom;
