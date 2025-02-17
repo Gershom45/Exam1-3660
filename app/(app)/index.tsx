@@ -1,80 +1,174 @@
-import React from "react";
-import { Text, View, SafeAreaView, StyleSheet, TouchableOpacity, TextInput, Button } from "react-native";
-import TextCustom from "../components/TextCustom";
-import { useAuth } from "@/context/AuthContext";
-import { Link } from 'expo-router';
+import React, { useState, useEffect } from "react";
+import { 
+  Text, 
+  View, 
+  SafeAreaView, 
+  StyleSheet, 
+  TouchableOpacity, 
+  TextInput, 
+  FlatList 
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/context/AuthContext";  
+import TextCustom from "../components/TextCustom"; 
+
+// ✅ Define the Task type correctly
+type Task = {
+  id: number;
+  text: string;
+  completed: boolean;
+};
 
 export default function Index() {
+  const { user, session, signout } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [input, setInput] = useState("");
 
-  const {user, session, signout} =useAuth()
-  const [input, setInput] = React.useState("");
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  useEffect(() => {
+    saveTasks();
+  }, [tasks]);
+
+  const loadTasks = async () => {
+    try {
+      const storedTasks = await AsyncStorage.getItem("tasks");
+      if (storedTasks) {
+        setTasks(JSON.parse(storedTasks));
+      }
+    } catch (error) {
+      console.log("Error loading tasks:", error);
+    }
+  };
+
+  const saveTasks = async () => {
+    try {
+      await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+    } catch (error) {
+      console.log("Error saving tasks:", error);
+    }
+  };
+
+  // ✅ Corrected addTask function
+  const addTask = () => {
+    if (input.trim() === "") return;
+    const newTask: Task = { id: Date.now(), text: input, completed: false };
+    setTasks([...tasks, newTask]);
+    setInput("");
+  };
+
+  // ✅ Fixed toggleTask function
+  const toggleTask = (id: number) => {
+    setTasks(tasks.map((task) => 
+      task.id === id 
+        ? { ...task, completed: !task.completed }  // ✅ Keeps `text`
+        : task
+    ));
+  };
+
+  const deleteTask = (id: number) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
   return (
-    <SafeAreaView>
-           <TouchableOpacity 
-            style={styles.button} 
-            onPress={signout}
-            >
-            <Text style={styles.buttonText}>SignOut</Text>
-        </TouchableOpacity>
-        {session && ( <View style={styles.container}>
-           <TextCustom fontSize={22}>Hello {user.name}!</TextCustom>
-            <View style={styles.container}>
-              <Text style={styles.text}> The following is a to-do list app designed to help you organize and manage your tasks and responsibilities. It allows you to create, edit, and delete tasks, set deadlines, and prioritize items effectively</Text>
-       {/*You can include the todo functionalies inside the index.tsx or you can create a separe screen and access via a link as below*/}
-      <Link href="./todos" style={styles.button}>
-      <Text style={styles.buttonText}>Access the todos</Text>
-    </Link>
-     </View>
-    
-        </View>)}
+    <SafeAreaView style={styles.container}>
+      {session ? (
+        <View>
+          <TextCustom fontSize={22}>Hello, {user?.name}!</TextCustom>
+          <Text style={styles.text}>Manage your tasks below:</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Enter a task..."
+            value={input}
+            onChangeText={setInput}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={addTask}>
+            <Text style={styles.buttonText}>Add Task</Text>
+          </TouchableOpacity>
+
+          <FlatList
+            data={tasks}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.taskItem}>
+                <TouchableOpacity onPress={() => toggleTask(item.id)}>
+                  <Text style={[styles.taskText, item.completed && styles.completedTask]}>
+                    {item.text}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => deleteTask(item.id)}>
+                  <Text style={styles.deleteButton}>❌</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={signout}>
+            <Text style={styles.buttonText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Text style={styles.text}>Loading...</Text>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container:{
-    paddingHorizontal:20,
-
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  headline:{
-    paddingVertical:20
+  button: {
+    backgroundColor: "black",
+    padding: 12,
+    borderRadius: 6,
+    alignItems: "center",
+    margin: 10,
   },
-    button: {
-      backgroundColor: 'black',
-      padding: 12,
-      borderRadius: 6,
-      alignItems: 'center',
-      margin:20,
-    },
-    buttonText: {
-      color: 'white',
-      fontSize: 18,
-    },
-    text: {
-      color: 'black',
-      textAlign:'justify',
-      fontSize: 15,
-    },
-    main: {
-      flex: 1,
-      gap: 2,
-      justifyContent: "center",
-      alignItems: "center",
-      maxWidth: 640,
-      paddingHorizontal: 24,
-      paddingVertical:200,
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: "bold",
-    },
-    subtitle: {
-      fontSize: 24,
-    },
-    separator: {
-      marginVertical: 90,
-      height: 1,
-      width: "80%",
-    }
-})
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+  },
+  text: {
+    color: "black",
+    textAlign: "center",
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    width: "100%",
+    borderColor: "grey",
+  },
+  taskItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#f2f2f2",
+    padding: 10,
+    borderRadius: 6,
+    marginVertical: 5,
+    width: "100%",
+  },
+  taskText: {
+    fontSize: 16,
+  },
+  completedTask: {
+    textDecorationLine: "line-through",
+    color: "gray",
+  },
+  deleteButton: {
+    fontSize: 20,
+    color: "red",
+  },
+});
