@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { Text, SafeAreaView, Alert } from "react-native";
-import { account } from "../app/lib/appwriteConfig.js";
-import TextCustom from "../components/TextCustom"; // Fixed import path
+import { account } from "../lib/appwriteConfig.js";
+import TextCustom from "../app/components/TextCustom"; // Fixed import path
 
 const AuthContext = createContext();
 
