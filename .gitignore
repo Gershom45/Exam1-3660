@@ -8,10 +8,16 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
-.env/
-.env
 
-# Native
+# Ignore environment files for security
+.env
+.env.local
+.env.*.local
+
+# Allow the example environment file (DO NOT add secrets here)
+!.env.example
+
+# Native files
 *.orig.*
 *.jks
 *.p8
@@ -19,22 +25,19 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
-# Metro
+# Metro bundler cache
 .metro-health-check*
 
-# debug
+# Debugging files
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
+# macOS system files
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-
-# typescript
+# TypeScript build info
 *.tsbuildinfo
 
 app-example

@@ -2,7 +2,7 @@ import { SafeAreaView, View, TextInput, Text, TouchableOpacity, StyleSheet, Acti
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
-import TextCustom from '../components/TextCustom'; // Fixed import path
+import TextCustom from './components/TextCustom';
 
 const SignInScreen = () => {
     const { session, signin, error } = useAuth(); // Get session, signin function, and error state
