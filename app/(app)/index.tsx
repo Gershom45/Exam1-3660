@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import TextCustom from "../components/TextCustom";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
+import { Picker } from '@react-native-picker/picker';
 
 // ✅ Define the Task type correctly
 type Task = {
@@ -33,10 +34,14 @@ export default function Index() {
   const [inputDescription, setInputDescription] = useState("");
   const [inputLocation, setInputLocation] = useState("");
   const [inputTime, setInputTime] = useState("");
- const [isHomeScreen, setIsHomeScreen] = useState(true);  // home screen shows up first
+  const [isHomeScreen, setIsHomeScreen] = useState(true);  // home screen shows up first
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null); // State to track selected date
   const [events, setEvents] = useState<{ [key: string]: string[] }>({}); // Store events by date
+  const [selectedHour, setSelectedHour] = useState("1");
+  const [selectedMinute, setSelectedMinute] = useState("00");
+  const [selectedPeriod, setSelectedPeriod] = useState("AM");
+  const [timeInput, setTimeInput] = useState("");
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -89,20 +94,21 @@ export default function Index() {
   };
 
   const addTask = () => {
-    if (inputName.trim() === "") return;
+    if (inputName.trim() === "" || !/^\d{1,2}:\d{2}$/.test(timeInput)) return;
     const newTask: Task = {
       id: Date.now(),
       name: inputName,
       description: inputDescription,
       location: inputLocation,
-      time: inputTime,
-     completed: false 
+      time: `${timeInput} ${selectedPeriod}`,
+      completed: false 
     };
     setTasks([...tasks, newTask]);
     setInputName("");
     setInputDescription("");
     setInputLocation("");
-    setInputTime("");
+    setTimeInput("");
+    setSelectedPeriod("AM");
   };
 
  // ✅ Fixed toggleTask function
@@ -132,22 +138,23 @@ export default function Index() {
   };
 
   const updateTask = () => {
-    if (inputName.trim() === "") return;
+    if (inputName.trim() === "" || !/^\d{1,2}:\d{2}$/.test(timeInput)) return;
    setTasks(tasks.map((task) =>
      task.id === editTaskId ? { 
               ...task,
               name: inputName,
               description: inputDescription,
               location: inputLocation,
-       time: inputTime 
+              time: `${timeInput} ${selectedPeriod}`
      } : task
    ));
     setInputName("");
     setInputDescription("");
     setInputLocation("");
-    setInputTime("");
-   setEditTaskId(null); // Reset the edit task ID
-   setIsHomeScreen(true); // back to the home screen
+    setTimeInput("");
+    setSelectedPeriod("AM");
+    setEditTaskId(null); // Reset the edit task ID
+    setIsHomeScreen(true); // back to the home screen
   };
 
 
@@ -294,7 +301,7 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.text}>Manage your tasks below:</Text>
+      <Text style={styles.manageTasksText}>Manage your tasks below</Text>
 
       <TextInput
         style={styles.input}
@@ -314,13 +321,24 @@ export default function Index() {
         value={inputLocation}
         onChangeText={setInputLocation}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter task time..."
-        value={inputTime}
-        onChangeText={setInputTime}
-      />
-
+      <View style={styles.timePickerContainer}>
+        <TextInput
+          style={styles.timeInput}
+          placeholder="HH:MM"
+          value={timeInput}
+          onChangeText={setTimeInput}
+          maxLength={5}
+          keyboardType="numeric"
+        />
+        <Picker
+          selectedValue={selectedPeriod}
+          style={styles.picker}
+          onValueChange={(itemValue) => setSelectedPeriod(itemValue)}
+        >
+          <Picker.Item label="AM" value="AM" />
+          <Picker.Item label="PM" value="PM" />
+        </Picker>
+      </View>
 
       <TouchableOpacity style={styles.button} onPress={editTaskId ? updateTask : addTask}>
         <Text style={styles.buttonText}>{editTaskId ? "Update Task" : "Add Task"}</Text>
@@ -393,7 +411,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
-    width: "100%",
+    width: "80%",
     borderColor: "grey",
   },
   taskItem: {
@@ -483,6 +501,40 @@ const styles = StyleSheet.create({
   eventItem: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  timePickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: "80%",
+  },
+  timeInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    width: "60%",
+    marginRight: 10,
+  },
+  picker: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    width: "30%",
+  },
+  timePickerSeparator: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    paddingHorizontal: 4, 
+  },
+  manageTasksText: {
+    color: "black",
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    marginTop: 40,
   },
 });
 
