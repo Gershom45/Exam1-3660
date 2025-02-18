@@ -9,8 +9,9 @@ import {
   FlatList 
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "@/context/AuthContext";  
+import { useAuth } from "@/context/AuthContext";
 import TextCustom from "../components/TextCustom"; 
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 // ✅ Define the Task type correctly
 type Task = {
@@ -23,6 +24,11 @@ export default function Index() {
   const { user, session, signout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [input, setInput] = useState("");
+  type RootStackParamList = {
+    TaskEditForm: { taskId: number };
+  };
+
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     loadTasks();
@@ -72,6 +78,10 @@ export default function Index() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  const editTask = (id: number) => {
+    navigation.navigate('TaskEditForm', { taskId: id });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {session ? (
@@ -100,9 +110,14 @@ export default function Index() {
                     {item.text}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => deleteTask(item.id)}>
-                  <Text style={styles.deleteButton}>❌</Text>
-                </TouchableOpacity>
+                <View style={styles.taskActions}>
+                  <TouchableOpacity onPress={() => editTask(item.id)}>
+                    <Text style={styles.editButton}>✏️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => deleteTask(item.id)}>
+                    <Text style={styles.deleteButton}>❌</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           />
@@ -170,5 +185,14 @@ const styles = StyleSheet.create({
   deleteButton: {
     fontSize: 20,
     color: "red",
+  },
+  taskActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  editButton: {
+    fontSize: 20,
+    color: "blue",
+    marginRight: 10,
   },
 });
