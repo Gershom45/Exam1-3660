@@ -16,14 +16,20 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 // ✅ Define the Task type correctly
 type Task = {
  id: number;
- text: string;
+ name: string;
+ description: string;
+ location: string;
+ time: string;
  completed: boolean;
 };
 
 export default function Index() {
  const { user, session, signout } = useAuth();
  const [tasks, setTasks] = useState<Task[]>([]);
- const [input, setInput] = useState("");
+ const [inputName, setInputName] = useState("");
+ const [inputDescription, setInputDescription] = useState("");
+ const [inputLocation, setInputLocation] = useState("");
+ const [inputTime, setInputTime] = useState("");
  const [isHomeScreen, setIsHomeScreen] = useState(true);  // home screen shows up first
  const [editTaskId, setEditTaskId] = useState<number | null>(null);
 
@@ -59,10 +65,20 @@ export default function Index() {
 
  // ✅ Corrected addTask function
  const addTask = () => {
-   if (input.trim() === "") return;
-   const newTask: Task = { id: Date.now(), text: input, completed: false };
+   if (inputName.trim() === "") return;
+   const newTask: Task = { 
+     id: Date.now(), 
+     name: inputName, 
+     description: inputDescription, 
+     location: inputLocation, 
+     time: inputTime, 
+     completed: false 
+   };
    setTasks([...tasks, newTask]);
-   setInput("");
+   setInputName("");
+   setInputDescription("");
+   setInputLocation("");
+   setInputTime("");
  };
 
  // ✅ Fixed toggleTask function
@@ -82,17 +98,31 @@ export default function Index() {
  const editTask = (id: number) => {
    setEditTaskId(id);
    const taskToEdit = tasks.find((task) => task.id === id);
-   if (taskToEdit) setInput(taskToEdit.text);
+   if (taskToEdit) {
+     setInputName(taskToEdit.name);
+     setInputDescription(taskToEdit.description);
+     setInputLocation(taskToEdit.location);
+     setInputTime(taskToEdit.time);
+   }
    setIsHomeScreen(false); // to task editing screen
  };
 
 
  const updateTask = () => {
-   if (input.trim() === "") return;
+   if (inputName.trim() === "") return;
    setTasks(tasks.map((task) =>
-     task.id === editTaskId ? { ...task, text: input } : task
+     task.id === editTaskId ? { 
+       ...task, 
+       name: inputName, 
+       description: inputDescription, 
+       location: inputLocation, 
+       time: inputTime 
+     } : task
    ));
-   setInput("");
+   setInputName("");
+   setInputDescription("");
+   setInputLocation("");
+   setInputTime("");
    setEditTaskId(null); // Reset the edit task ID
    setIsHomeScreen(true); // back to the home screen
  };
@@ -108,45 +138,69 @@ export default function Index() {
  };
 
 
- if (isHomeScreen) {
-   return (
-     <SafeAreaView style={[styles.container, { backgroundColor: "white" }]}>
-       <View style={styles.header}>
-         <Text style={styles.headerText}>To-Do</Text>
-       </View>
-       <View style={styles.body}>
-         <Text style={styles.text}>Welcome to your To-Do app!</Text>
-         <FlatList
-           data={tasks.filter((task) => !task.completed)} // showing uncompleted tasks
-           keyExtractor={(item) => item.id.toString()}
-           renderItem={({ item }) => (
-             <View style={styles.taskItem}>
-               <Text style={styles.taskText}>{item.text}</Text>
-               <TouchableOpacity onPress={() => toggleTask(item.id)}>
-                 <Text style={styles.checkMark}>✔️</Text> {/* show a checkmark to mark as completed */}
-               </TouchableOpacity>
+if (isHomeScreen) {
+ return (
+   <SafeAreaView style={[styles.container, { backgroundColor: "white" }]}>
+     <View style={styles.header}>
+       <Text style={styles.headerText}>To-Do</Text>
+     </View>
+     <View style={styles.body}>
+       <TextCustom fontSize={22}>Hello, {user?.name}!</TextCustom>
+       <Text style={styles.text}>Welcome to your To-Do app!</Text>
+       <FlatList
+         data={tasks.filter((task) => !task.completed)} // showing uncompleted tasks
+         keyExtractor={(item) => item.id.toString()}
+         renderItem={({ item }) => (
+           <View style={styles.taskItem}>
+             <View>
+               <Text style={styles.taskName}>{item.name}</Text>
+               <Text style={styles.taskDescription}>{item.description}</Text>
+               <View style={styles.divider} />
+               <Text style={styles.taskLocation}>{item.location}</Text>
+               <Text style={styles.taskTime}>{item.time}</Text>
              </View>
-           )}
-         />
-         <TouchableOpacity style={styles.button} onPress={goToTasks}>
-           <Text style={styles.buttonText}>Go to Tasks</Text>
-         </TouchableOpacity>
-       </View>
-     </SafeAreaView>
-   );
- }
+             <TouchableOpacity onPress={() => toggleTask(item.id)}>
+               <Text style={styles.checkMark}>✔️</Text> {/* show a checkmark to mark as completed */}
+             </TouchableOpacity>
+           </View>
+         )}
+       />
+       <TouchableOpacity style={styles.button} onPress={goToTasks}>
+         <Text style={styles.buttonText}>Go to Tasks</Text>
+       </TouchableOpacity>
+     </View>
+   </SafeAreaView>
+ );
+}
 
 
  return (
    <SafeAreaView style={styles.container}>
-     <TextCustom fontSize={22}>Hello, {user?.name}!</TextCustom>
-         <Text style={styles.text}>Manage your tasks below:</Text>
+     <Text style={styles.text}>Manage your tasks below:</Text>
 
      <TextInput
        style={styles.input}
-       placeholder="Enter a task..."
-       value={input}
-       onChangeText={setInput}
+       placeholder="Enter task name..."
+       value={inputName}
+       onChangeText={setInputName}
+     />
+     <TextInput
+       style={styles.input}
+       placeholder="Enter task description..."
+       value={inputDescription}
+       onChangeText={setInputDescription}
+     />
+     <TextInput
+       style={styles.input}
+       placeholder="Enter task location..."
+       value={inputLocation}
+       onChangeText={setInputLocation}
+     />
+     <TextInput
+       style={styles.input}
+       placeholder="Enter task time..."
+       value={inputTime}
+       onChangeText={setInputTime}
      />
 
 
@@ -160,9 +214,13 @@ export default function Index() {
        renderItem={({ item }) => (
          <View style={styles.taskItem}>
            <TouchableOpacity onPress={() => toggleTask(item.id)}>
-             <Text style={[styles.taskText, item.completed && styles.completedTask]}>
-               {item.text}
+             <Text style={[styles.taskName, item.completed && styles.completedTask]}>
+               {item.name}
              </Text>
+             <Text style={styles.taskDescription}>{item.description}</Text>
+             <View style={styles.divider} />
+             <Text style={styles.taskLocation}>{item.location}</Text>
+             <Text style={styles.taskTime}>{item.time}</Text>
            </TouchableOpacity>
            <View style={styles.taskActions}>
              <TouchableOpacity onPress={() => editTask(item.id)}>
@@ -270,6 +328,27 @@ const styles = StyleSheet.create({
    flex: 1,
    justifyContent: "center",
    alignItems: "center",
+ },
+ taskDescription: {
+   fontSize: 14,
+   color: "gray",
+ },
+ taskLocation: {
+   fontSize: 14,
+   color: "black",
+ },
+ taskTime: {
+   fontSize: 14,
+   color: "black",
+ },
+ taskName: {
+   fontSize: 16,
+   fontWeight: "bold",
+ },
+ divider: {
+   height: 1,
+   backgroundColor: "gray",
+   marginVertical: 5,
  },
 });
 
