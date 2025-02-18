@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         justifyContent: 'center',
+        alignItems: 'center',
     },
     headline: {
         textAlign: 'center',
@@ -79,7 +80,10 @@ const styles = StyleSheet.create({
         padding: 10,
         marginTop: 10,
         marginBottom: 10,
-        borderColor: "grey"
+        borderColor: "grey",
+        maxWidth: 400,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     button: {
         backgroundColor: 'black',
