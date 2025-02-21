@@ -232,71 +232,76 @@ export default function Index() {
 
   if (isHomeScreen) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: "white" }]}>
-        <View style={styles.header}>
-          <Image
-            source={require('@/assets/images/todo.png')}
-            style={styles.headerImage}
-          />
-        </View>
-        <ScrollView contentContainerStyle={styles.body}>
-          <TextCustom fontSize={22}>Hello, {user?.name}!</TextCustom>
-          <Text style={styles.text}>Welcome to your To-Do app!</Text>
-          <FlatList
-         data={tasks.filter((task) => !task.completed)} // showing uncompleted tasks
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.taskItem}>
-                <View>
-                  <Text style={styles.taskName}>{item.name}</Text>
-                  <Text style={styles.taskDescription}>{item.description}</Text>
-                  <View style={styles.divider} />
-                  <Text style={styles.taskLocation}>{item.location}</Text>
-                  <Text style={styles.taskTime}>{item.time}</Text>
-                </View>
-                <TouchableOpacity onPress={() => toggleTask(item.id)}>
-               <Text style={styles.checkMark}>✔️</Text> {/* show a checkmark to mark as completed */}
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-          <TouchableOpacity style={styles.button} onPress={goToTasks}>
-            <Text style={styles.buttonText}>Go to Tasks</Text>
-          </TouchableOpacity>
-
-          {/* Calendar component */}
-          <Calendar
-            onDayPress={onDayPress} // to select a date
-            markedDates={renderMarkedDates()} // to display events on selected dates
-            theme={{
-              todayTextColor: "purple",
-              arrowColor: "purple",
-              selectedDayBackgroundColor: "purple", // the days background color
-              selectedDayTextColor: "white", // Selected day text color
-            }}
-          />
-
-          {/* Render events for the selected date */}
-          {renderEventsForSelectedDate()}
-
-          {/* input for adding events */}
-          {selectedDate && (
-            <View style={styles.eventInputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter event name..."
-                value={inputName}
-                onChangeText={setInputName}
+      <SafeAreaView style={{ flex: 1 }}>
+      <FlatList
+      data={[]}
+      renderItem={null}
+        ListHeaderComponent={
+          <>
+            <View style={styles.header}>
+              <Image
+                source={require('@/assets/images/todo.png')}
+                style={styles.headerImage}
               />
-              <TouchableOpacity style={styles.button} onPress={addEventToDate}>
-                <Text style={styles.buttonText}>Add Event</Text>
-              </TouchableOpacity>
             </View>
+            <View style={styles.body}>
+              <TextCustom fontSize={22}>Hello, {user?.name}!</TextCustom>
+              <Text style={styles.text}>Welcome to your To-Do app!</Text>
+              <FlatList
+                data={tasks.filter((task) => !task.completed)} // showing uncompleted tasks
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.taskItem}>
+                    <View>
+                      <Text style={styles.taskName}>{item.name}</Text>
+                      <Text style={styles.taskDescription}>{item.description}</Text>
+                      <View style={styles.divider} />
+                      <Text style={styles.taskLocation}>{item.location}</Text>
+                      <Text style={styles.taskTime}>{item.time}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => toggleTask(item.id)}>
+                      <Text style={styles.checkMark}>✔️</Text> {/* show a checkmark to mark as completed */}
+                    </TouchableOpacity>
+                  </View>
           )}
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+        />
+        <TouchableOpacity style={styles.button} onPress={goToTasks}>
+                <Text style={styles.buttonText}>Go to Tasks</Text>
+              </TouchableOpacity>
+              {/* Calendar component */}
+              <Calendar
+                onDayPress={onDayPress} // to select a date
+                markedDates={renderMarkedDates()} // to display events on selected dates
+                theme={{
+                  todayTextColor: "purple",
+                  arrowColor: "purple",
+                  selectedDayBackgroundColor: "purple", // the days background color
+                  selectedDayTextColor: "white", // Selected day text color
+                }}
+              />
+              {/* Render events for the selected date */}
+              {renderEventsForSelectedDate()}
+              {/* input for adding events */}
+              {selectedDate && (
+                <View style={styles.eventInputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter event name..."
+                    value={inputName}
+                    onChangeText={setInputName}
+                  />
+                  <TouchableOpacity style={styles.button} onPress={addEventToDate}>
+                    <Text style={styles.buttonText}>Add Event</Text>
+                  </TouchableOpacity>
+                </View>
+                 )}
+                 </View>
+               </>
+             }
+           />
+         </SafeAreaView>
+       );
+     }
 
 
   return (
