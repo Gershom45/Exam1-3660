@@ -333,7 +333,7 @@ export default function Index() {
         <Picker
           selectedValue={selectedPeriod}
           style={styles.picker}
-          onValueChange={(itemValue) => setSelectedPeriod(itemValue)}
+          onValueChange={(itemValue: React.SetStateAction<string>) => setSelectedPeriod(itemValue)}
         >
           <Picker.Item label="AM" value="AM" />
           <Picker.Item label="PM" value="PM" />
