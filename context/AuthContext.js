@@ -1,7 +1,8 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import { Text, SafeAreaView, Alert } from "react-native";
+import { SafeAreaView, Alert, StyleSheet, View } from "react-native";
 import { account } from "../lib/appwriteConfig.js";
 import TextCustom from "../app/components/TextCustom"; // Fixed import path
+import { CircleLoader } from "react-awesome-loaders"; // import CircleLoader component
 
 const AuthContext = createContext();
 
@@ -64,8 +65,14 @@ const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={contextData}>
             {loading ? (
-                <SafeAreaView>
-                    <TextCustom fontSize={28}>Loading...</TextCustom>
+                <SafeAreaView style={styles.centeredView}>
+                    <CircleLoader
+                        meshColor={"#6366F1"}
+                        lightColor={"#E0E7FF"}
+                        duration={1.5}
+                        desktopSize={"90px"}
+                        mobileSize={"64px"}
+                    />
                 </SafeAreaView>
             ) : (
                 children
@@ -75,5 +82,13 @@ const AuthProvider = ({ children }) => {
 };
 
 const useAuth = () => useContext(AuthContext);
+
+const styles = StyleSheet.create({
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+});
 
 export { useAuth, AuthContext, AuthProvider };
