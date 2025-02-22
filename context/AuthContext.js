@@ -2,7 +2,7 @@ import { useContext, createContext, useState, useEffect } from "react";
 import { SafeAreaView, Alert, StyleSheet, View } from "react-native";
 import { account } from "../lib/appwriteConfig.js";
 import TextCustom from "../app/components/TextCustom"; // Fixed import path
-import { CircleLoader } from "react-awesome-loaders"; // import CircleLoader component
+import Spinner from 'react-native-loading-spinner-overlay'; // Updated Loader
 
 const AuthContext = createContext();
 
@@ -64,19 +64,14 @@ const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={contextData}>
-            {loading ? (
-                <SafeAreaView style={styles.centeredView}>
-                    <CircleLoader
-                        meshColor={"#6366F1"}
-                        lightColor={"#E0E7FF"}
-                        duration={1.5}
-                        desktopSize={"90px"}
-                        mobileSize={"64px"}
-                    />
-                </SafeAreaView>
-            ) : (
-                children
-            )}
+            {/* Show loading spinner when loading */}
+            <Spinner
+                visible={loading}
+                textContent={"Loading..."}
+                textStyle={{ color: "#FFF" }}
+                overlayColor="rgba(0, 0, 0, 0.75)" // Slightly dark background
+            />
+            {!loading && children}
         </AuthContext.Provider>
     );
 };
@@ -92,3 +87,4 @@ const styles = StyleSheet.create({
 });
 
 export { useAuth, AuthContext, AuthProvider };
+
