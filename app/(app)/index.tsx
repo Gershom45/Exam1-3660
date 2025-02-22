@@ -7,15 +7,16 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  ScrollView,
   Image,
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
 import TextCustom from "../components/TextCustom";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
-import { Picker } from '@react-native-picker/picker';
+import { MaterialIcons } from '@expo/vector-icons'; // Import MaterialIcons
+import { Entypo } from '@expo/vector-icons'; // Import Entypo for menu icon
 
 // ✅ Define the Task type correctly
 type Task = {
@@ -28,20 +29,14 @@ type Task = {
 };
 
 export default function Index() {
-  const { user, session, signout } = useAuth();
+  const { user, signout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [inputName, setInputName] = useState("");
-  const [inputDescription, setInputDescription] = useState("");
-  const [inputLocation, setInputLocation] = useState("");
-  const [inputTime, setInputTime] = useState("");
-  const [isHomeScreen, setIsHomeScreen] = useState(true);  // home screen shows up first
-  const [editTaskId, setEditTaskId] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null); // State to track selected date
   const [events, setEvents] = useState<{ [key: string]: string[] }>({}); // Store events by date
-  const [selectedHour, setSelectedHour] = useState("1");
-  const [selectedMinute, setSelectedMinute] = useState("00");
-  const [selectedPeriod, setSelectedPeriod] = useState("AM");
-  const [timeInput, setTimeInput] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false); // State to track menu visibility
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -93,81 +88,14 @@ export default function Index() {
     }
   };
 
-  const addTask = () => {
-    if (inputName.trim() === "" || !/^\d{1,2}:\d{2}$/.test(timeInput)) return;
-    const newTask: Task = {
-      id: Date.now(),
-      name: inputName,
-      description: inputDescription,
-      location: inputLocation,
-      time: `${timeInput} ${selectedPeriod}`,
-      completed: false 
-    };
-    setTasks([...tasks, newTask]);
-    setInputName("");
-    setInputDescription("");
-    setInputLocation("");
-    setTimeInput("");
-    setSelectedPeriod("AM");
-  };
-
- // ✅ Fixed toggleTask function
   const toggleTask = (id: number) => {
-   setTasks(tasks.map((task) =>
-     task.id === id
-        ? { ...task, completed: !task.completed }  // ✅ Keeps `text`
-       : task
-   ));
+    setTasks(tasks.map((task) =>
+      task.id === id
+        ? { ...task, completed: !task.completed }
+        : task
+    ));
   };
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
-
-
-  const editTask = (id: number) => {
-    setEditTaskId(id);
-    const taskToEdit = tasks.find((task) => task.id === id);
-    if (taskToEdit) {
-      setInputName(taskToEdit.name);
-      setInputDescription(taskToEdit.description);
-      setInputLocation(taskToEdit.location);
-      setInputTime(taskToEdit.time);
-    }
-   setIsHomeScreen(false); // to task editing screen
-  };
-
-  const updateTask = () => {
-    if (inputName.trim() === "" || !/^\d{1,2}:\d{2}$/.test(timeInput)) return;
-   setTasks(tasks.map((task) =>
-     task.id === editTaskId ? { 
-              ...task,
-              name: inputName,
-              description: inputDescription,
-              location: inputLocation,
-              time: `${timeInput} ${selectedPeriod}`
-     } : task
-   ));
-    setInputName("");
-    setInputDescription("");
-    setInputLocation("");
-    setTimeInput("");
-    setSelectedPeriod("AM");
-    setEditTaskId(null); // Reset the edit task ID
-    setIsHomeScreen(true); // back to the home screen
-  };
-
-
-  const goToHome = () => {
-    setIsHomeScreen(true);  // to Home screen
-  };
-
-
-    const goToTasks = () => {
-    setIsHomeScreen(false); // go to tasks list
-  };
-
-  //  to handle adding events on a selected date
   const addEventToDate = () => {
     if (!selectedDate || inputName.trim() === "") return;
 
@@ -186,7 +114,6 @@ export default function Index() {
     setInputName("");
   };
 
-  // for event rendering on the calendar
   const renderMarkedDates = () => {
     const markedDates: any = {};
 
@@ -211,10 +138,9 @@ export default function Index() {
     setSelectedDate(day.dateString); // to update the selected date
   };
 
-  // show events for the selected date
   const renderEventsForSelectedDate = () => {
     if (!selectedDate || !Array.isArray(events[selectedDate])) return null;
-  
+
     return (
       <View style={styles.eventList}>
         <Text style={styles.eventTitle}>Events for {selectedDate}:</Text>
@@ -226,16 +152,25 @@ export default function Index() {
       </View>
     );
   };
-  
 
-  
+  const goToTasks = () => {
+    navigation.navigate("edit"); // Ensure the route name matches the one defined in your navigation setup
+  };
 
-  if (isHomeScreen) {
-    return (
-      <SafeAreaView style={{ flex: 1 }}>
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+  };
+
+  const goToProfile = () => {
+    setMenuVisible(false);
+    navigation.navigate("profile"); // Ensure the route name matches the one defined in your navigation setup
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
       <FlatList
-      data={[]}
-      renderItem={null}
+        data={[]}
+        renderItem={null}
         ListHeaderComponent={
           <>
             <View style={styles.header}>
@@ -243,6 +178,19 @@ export default function Index() {
                 source={require('@/assets/images/todo.png')}
                 style={styles.headerImage}
               />
+              <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+                <Entypo name="menu" size={24} color="black" />
+              </TouchableOpacity>
+              {menuVisible && (
+                <View style={styles.dropdownMenu}>
+                  <TouchableOpacity style={styles.dropdownItem} onPress={goToProfile}>
+                    <Text style={styles.dropdownText}>Profile</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.dropdownItem}>
+                    <Text style={styles.dropdownText}>About</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
             <View style={styles.body}>
               <TextCustom fontSize={22}>Hello, {user?.name}!</TextCustom>
@@ -263,9 +211,9 @@ export default function Index() {
                       <Text style={styles.checkMark}>✔️</Text> {/* show a checkmark to mark as completed */}
                     </TouchableOpacity>
                   </View>
-          )}
-        />
-        <TouchableOpacity style={styles.button} onPress={goToTasks}>
+                )}
+              />
+              <TouchableOpacity style={styles.button} onPress={goToTasks}>
                 <Text style={styles.buttonText}>Go to Tasks</Text>
               </TouchableOpacity>
               {/* Calendar component */}
@@ -294,95 +242,11 @@ export default function Index() {
                     <Text style={styles.buttonText}>Add Event</Text>
                   </TouchableOpacity>
                 </View>
-                 )}
-                 </View>
-               </>
-             }
-           />
-         </SafeAreaView>
-       );
-     }
-
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.manageTasksText}>Manage your tasks below</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Enter task name..."
-        value={inputName}
-        onChangeText={setInputName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter task description..."
-        value={inputDescription}
-        onChangeText={setInputDescription}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter task location..."
-        value={inputLocation}
-        onChangeText={setInputLocation}
-      />
-      <View style={styles.timePickerContainer}>
-        <TextInput
-          style={styles.timeInput}
-          placeholder="HH:MM"
-          value={timeInput}
-          onChangeText={setTimeInput}
-          maxLength={5}
-          keyboardType="numeric"
-        />
-        <Picker
-          selectedValue={selectedPeriod}
-          style={styles.picker}
-          onValueChange={(itemValue: React.SetStateAction<string>) => setSelectedPeriod(itemValue)}
-        >
-          <Picker.Item label="AM" value="AM" />
-          <Picker.Item label="PM" value="PM" />
-        </Picker>
-      </View>
-
-      <TouchableOpacity style={styles.button} onPress={editTaskId ? updateTask : addTask}>
-        <Text style={styles.buttonText}>{editTaskId ? "Update Task" : "Add Task"}</Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={tasks}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.taskItem}>
-            <TouchableOpacity onPress={() => toggleTask(item.id)}>
-             <Text style={[styles.taskName, item.completed && styles.completedTask]}>
-                {item.name}
-              </Text>
-              <Text style={styles.taskDescription}>{item.description}</Text>
-              <View style={styles.divider} />
-              <Text style={styles.taskLocation}>{item.location}</Text>
-              <Text style={styles.taskTime}>{item.time}</Text>
-            </TouchableOpacity>
-            <View style={styles.taskActions}>
-              <TouchableOpacity onPress={() => editTask(item.id)}>
-                <Text style={styles.editButton}>✏️</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteTask(item.id)}>
-                <Text style={styles.deleteButton}>❌</Text>
-              </TouchableOpacity>
+              )}
             </View>
-          </View>
-        )}
+          </>
+        }
       />
-
-      <TouchableOpacity style={styles.button} onPress={signout}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-
-
-      <TouchableOpacity style={styles.button} onPress={goToHome}>
-        <Text style={styles.buttonText}>Go to Home</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -395,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   button: {
-    backgroundColor: "black",
+    backgroundColor: "#8b61c2", // Changed color to #8b61c2
     padding: 12,
     borderRadius: 6,
     alignItems: "center",
@@ -425,33 +289,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f2f2f2",
     padding: 10,
-   borderRadius: 6,
-   marginVertical: 5,
-   width: "100%",
- },
- taskText: {
-   fontSize: 16,
- },
- completedTask: {
-   textDecorationLine: "line-through",
-   color: "gray",
- },
- deleteButton: {
-   fontSize: 20,
-   color: "red",
- },
- taskActions: {
-   flexDirection: "row",
-   alignItems: "center",
- },
- editButton: {
-   fontSize: 20,
-   color: "blue",
-   marginRight: 10,
- },
- checkMark: {
-   fontSize: 24,
-   color: "gray",
+    borderRadius: 6,
+    marginVertical: 5,
+    width: "100%",
+  },
+  taskText: {
+    fontSize: 16,
+  },
+  completedTask: {
+    textDecorationLine: "line-through",
+    color: "gray",
+  },
+  deleteButton: {
+    fontSize: 20,
+    color: "red",
+  },
+  taskActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  editButton: {
+    fontSize: 20,
+    color: "blue",
+    marginRight: 10,
+  },
+  checkMark: {
+    fontSize: 24,
+    color: "gray",
   },
   header: {
     backgroundColor: "#E6E6FA",
@@ -460,11 +324,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     height: 150,
+    position: "relative",
   },
   headerImage: {
     width: 900,
     height: 800,
     resizeMode: "contain",
+  },
+  menuButton: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: 60,
+    right: 20,
+    backgroundColor: "white",
+    borderRadius: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  dropdownItem: {
+    padding: 10,
+  },
+  dropdownText: {
+    fontSize: 16,
   },
   body: {
     flexGrow: 1,
@@ -506,40 +394,6 @@ const styles = StyleSheet.create({
   eventItem: {
     fontSize: 16,
     marginBottom: 5,
-  },
-  timePickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    width: "80%",
-  },
-  timeInput: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    width: "60%",
-    marginRight: 10,
-  },
-  picker: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    width: "30%",
-  },
-  timePickerSeparator: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    paddingHorizontal: 4, 
-  },
-  manageTasksText: {
-    color: "black",
-    textAlign: "center",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    marginTop: 40,
   },
 });
 
