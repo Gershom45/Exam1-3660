@@ -16,6 +16,7 @@ import TextCustom from "../components/TextCustom";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import { Picker } from '@react-native-picker/picker';
+import NavBar from "../components/NavBar";
 
 // ✅ Define the Task type correctly
 type Task = {
@@ -44,6 +45,14 @@ export default function Index() {
   const [timeInput, setTimeInput] = useState("");
 
   const navigation = useNavigation<NavigationProp<any>>();
+
+  const handleGoToTasks = () => {
+    setIsHomeScreen(false);
+  };  //Handles with button from Navbar to Task Edit Screen
+
+  const handleGoToHome = () => {
+    setIsHomeScreen(true);
+  }
 
   useEffect(() => {
     loadTasks();
@@ -239,6 +248,11 @@ export default function Index() {
         ListHeaderComponent={
           <>
             <View style={styles.header}>
+              <NavBar 
+                goToTasks={handleGoToTasks} 
+                goToHome={handleGoToHome}
+                signout={signout}
+                />
               <Image
                 source={require('@/assets/images/todo.png')}
                 style={styles.headerImage}
@@ -265,9 +279,7 @@ export default function Index() {
                   </View>
           )}
         />
-        <TouchableOpacity style={styles.button} onPress={goToTasks}>
-                <Text style={styles.buttonText}>Go to Tasks</Text>
-              </TouchableOpacity>
+
               {/* Calendar component */}
               <Calendar
                 onDayPress={onDayPress} // to select a date
@@ -306,6 +318,19 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.container}>
+      
+      <View style={styles.header}>
+              <NavBar 
+                goToTasks={handleGoToTasks} 
+                goToHome={handleGoToHome}
+                signout={signout}
+                />
+              <Image
+                source={require('@/assets/images/todo.png')}
+                style={styles.headerImage}
+              />
+      </View>
+
       <Text style={styles.manageTasksText}>Manage your tasks below</Text>
 
       <TextInput
@@ -374,15 +399,7 @@ export default function Index() {
           </View>
         )}
       />
-
-      <TouchableOpacity style={styles.button} onPress={signout}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-
-
-      <TouchableOpacity style={styles.button} onPress={goToHome}>
-        <Text style={styles.buttonText}>Go to Home</Text>
-      </TouchableOpacity>
+      
     </SafeAreaView>
   );
 }
