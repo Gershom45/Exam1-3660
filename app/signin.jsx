@@ -33,6 +33,7 @@ const SignInScreen = () => {
                     style={styles.input}
                     value={email}
                     onChangeText={setEmail}
+                    placeholderTextColor="#999"
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />
@@ -42,6 +43,7 @@ const SignInScreen = () => {
                     style={styles.input}
                     placeholder="Enter your password..."
                     value={password}
+                    placeholderTextColor="#999"
                     onChangeText={setPassword}
                     secureTextEntry
                 />
