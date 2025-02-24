@@ -19,6 +19,7 @@ import TextCustom from "../components/TextCustom";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import NavBar from "../components/NavBar";
+import Profile from "../components/Profile";
 
 type Task = {
   id: number;
@@ -54,6 +55,9 @@ export default function Index() {
 
   // SCREEN STATE
   const [isHomeScreen, setIsHomeScreen] = useState(true);
+
+
+  const [isProfileScreen, setIsProfileScreen] = useState(false);
 
   // EVENT STATE
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -122,6 +126,10 @@ export default function Index() {
 
   // Schedules a notification at the task's scheduled time.
   const scheduleTaskNotification = async (task: Task) => {
+    if (Platform.OS === 'web') {
+      console.log('Notifications are not supported on web platform');
+      return;
+    }
     // Parse the task's time (e.g., "10:30 AM")
     const [timePart, period] = task.time.split(" ");
     let [hour, minute] = timePart.split(":").map(Number);
@@ -237,10 +245,19 @@ export default function Index() {
   // NAVIGATION BUTTONS
   const handleGoToTasks = () => {
     setIsHomeScreen(false);
+    setIsProfileScreen(false);
   };
   const handleGoToHome = () => {
     setIsHomeScreen(true);
+    setIsProfileScreen(false);
   };
+
+  const handleGoToProfile = () => {
+    setIsHomeScreen(false);
+    setIsProfileScreen(true);
+  };
+
+  
 
   // EVENT FUNCTIONS
   const addEventToDate = () => {
@@ -317,6 +334,7 @@ export default function Index() {
 
   // -------------------- NOTIFICATIONS --------------------
   useEffect(() => {
+    if (Platform.OS !== 'web') {
     (async () => {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
@@ -338,7 +356,19 @@ export default function Index() {
       Notifications.removeNotificationSubscription(notificationListener);
       Notifications.removeNotificationSubscription(responseListener);
     };
+  }
   }, []);
+
+  if (isProfileScreen) {
+    return (
+      <Profile 
+        goToTasks={handleGoToTasks}
+        goToHome={handleGoToHome}
+        signout={signout}
+        goToProfile={handleGoToProfile}
+      />
+    );
+  }
   // ---------------------------------------------------------
 
   // ================= SCREEN RENDER =================
@@ -354,6 +384,7 @@ export default function Index() {
           <FlatList
             data={[]}
             renderItem={() => null}
+            contentContainerStyle={{ width: '100%', maxWidth: '100%' }}
             ListHeaderComponent={
               <>
                 {/* HEADER */}
@@ -361,6 +392,7 @@ export default function Index() {
                   <NavBar
                     goToTasks={handleGoToTasks}
                     goToHome={handleGoToHome}
+                    goToProfile={handleGoToProfile}
                     signout={signout}
                   />
                   <Image
@@ -454,6 +486,7 @@ export default function Index() {
         <FlatList
           data={[]}
           renderItem={() => null}
+          contentContainerStyle={{ width: '100%', maxWidth: '100%' }}
           ListHeaderComponent={
             <>
               {/* HEADER */}
@@ -461,6 +494,7 @@ export default function Index() {
                 <NavBar
                   goToTasks={handleGoToTasks}
                   goToHome={handleGoToHome}
+                  goToProfile={handleGoToProfile}
                   signout={signout}
                 />
                 <Image
@@ -468,7 +502,9 @@ export default function Index() {
                   style={styles.headerImage}
                 />
               </View>
+
               {/* TITLE */}
+              <View style={styles.formWrapper}>
               <Text style={styles.manageTasksText}>
                 {editTaskId ? "Update your task below" : "Manage your tasks below"}
               </Text>
@@ -554,6 +590,7 @@ export default function Index() {
                   </View>
                 )}
               />
+              </View>
             </>
           }
         />
@@ -565,9 +602,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    width: '100%',
   },
   header: {
     backgroundColor: "#E6E6FA",
@@ -576,17 +611,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     height: 150,
+    alignSelf: 'stretch', // Makes header stretch full width
   },
   headerImage: {
     width: "100%",
-    height: 150,
-    resizeMode: "cover",
+    height: 500,
+    marginTop: 30,
   },
   body: {
-    flexGrow: 1,
-    justifyContent: "center",
+    flex: 1,
+    width: '100%',
     alignItems: "center",
-    padding: 20,
+    padding: Platform.OS === 'web' ? 20 : 10,
   },
   manageTasksText: {
     color: "black",
@@ -603,11 +639,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 800 : '100%',
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
-    width: "80%",
     borderColor: "grey",
     backgroundColor: "white",
   },
@@ -630,7 +667,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 6,
     marginVertical: 5,
-    width: "100%",
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 800 : '100%',
   },
   taskName: {
     fontSize: 16,
@@ -674,12 +712,25 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "gray",
   },
+  formWrapper: {
+    width: '100%',
+    alignItems: "center",
+    paddingHorizontal: Platform.OS === 'web' ? '5%' : 10,
+    maxWidth: Platform.OS === 'web' ? 1200 : '100%',
+    alignSelf: 'center',
+  },
+  listContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
   // TIME PICKER TOGGLE STYLES
   timePickerContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    width: "80%",
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 800 : '100%',
   },
   timeInput: {
     flex: 0.7,
@@ -704,6 +755,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+
   // EVENTS STYLES
   eventInputContainer: {
     marginVertical: 20,

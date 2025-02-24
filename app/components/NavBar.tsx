@@ -4,10 +4,11 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 type NavBarProps = {
   goToTasks: () => void;
   goToHome: () => void;
+  goToProfile: () => void;
   signout: () => void;
 };
 
-const NavBar = ({ goToTasks, goToHome, signout }: NavBarProps) => {
+const NavBar = ({ goToTasks, goToHome, signout, goToProfile }: NavBarProps) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   const toggleDropdown = () => {
@@ -25,6 +26,7 @@ const NavBar = ({ goToTasks, goToHome, signout }: NavBarProps) => {
       <TouchableOpacity style={styles.menuButton} onPress={toggleDropdown}>
         <Text style={styles.menuText}>☰</Text>
       </TouchableOpacity>
+
       {isDropdownVisible && (
         <View style={styles.dropdown}>
           <TouchableOpacity
@@ -33,12 +35,21 @@ const NavBar = ({ goToTasks, goToHome, signout }: NavBarProps) => {
           >
             <Text style={styles.dropdownText}>Home</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.dropdownItem}
             onPress={() => handlePress(goToTasks)}
           >
             <Text style={styles.dropdownText}>Tasks</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => handlePress(goToProfile)}
+          >
+          <Text style={styles.dropdownText}>Profile</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.dropdownItem}
             onPress={() => handlePress(signout)}
@@ -54,14 +65,14 @@ const NavBar = ({ goToTasks, goToHome, signout }: NavBarProps) => {
 const styles = StyleSheet.create({
   navbar: {
     position: "absolute",
-    top: 20,
-    right: 20,
+    top: 10, // Reduced from 20
+    right: 10, // Reduced from 20
     zIndex: 1000,
   },
   menuButton: {
     backgroundColor: "#E6E6FA",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingVertical: 5, // Reduced from 10
+    paddingHorizontal: 10, // Reduced from 15
     borderRadius: 5,
   },
   menuText: {
@@ -71,8 +82,8 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: "absolute",
-    top: -30,
-    right: 70,
+    top: -20, // Adjusted from -30
+    right: 50, // Reduced from 70
     backgroundColor: "#73D",
     borderRadius: 5,
     marginTop: 10,
