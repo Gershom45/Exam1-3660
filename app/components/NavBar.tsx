@@ -1,32 +1,48 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-const NavBar = ({ goToTasks, goToHome, signout}: {goToTasks: () => void, goToHome: () => void, signout: () => void, }) => {
-  
+type NavBarProps = {
+  goToTasks: () => void;
+  goToHome: () => void;
+  signout: () => void;
+};
+
+const NavBar = ({ goToTasks, goToHome, signout }: NavBarProps) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   const toggleDropdown = () => {
-    setIsDropdownVisible(!isDropdownVisible);
+    setIsDropdownVisible(prev => !prev);
+  };
+
+  // This function hides the dropdown and then calls the provided action.
+  const handlePress = (action: () => void) => {
+    setIsDropdownVisible(false);
+    action();
   };
 
   return (
     <View style={styles.navbar}>
-      {/* Menu Button */}
       <TouchableOpacity style={styles.menuButton} onPress={toggleDropdown}>
         <Text style={styles.menuText}>☰</Text>
       </TouchableOpacity>
-
-      {/* Dropdown Options */}
       {isDropdownVisible && (
         <View style={styles.dropdown}>
-          <TouchableOpacity style={styles.dropdownItem} onPress={goToHome}>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => handlePress(goToHome)}
+          >
             <Text style={styles.dropdownText}>Home</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.dropdownItem} onPress={goToTasks}>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => handlePress(goToTasks)}
+          >
             <Text style={styles.dropdownText}>Tasks</Text>
           </TouchableOpacity>
-          {/* Add more dropdown items here */}
-          <TouchableOpacity style={styles.dropdownItem} onPress={signout}>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => handlePress(signout)}
+          >
             <Text style={styles.dropdownText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
@@ -38,9 +54,9 @@ const NavBar = ({ goToTasks, goToHome, signout}: {goToTasks: () => void, goToHom
 const styles = StyleSheet.create({
   navbar: {
     position: "absolute",
-    top: 20,  // Adjust for notch-safe position
-    right: 20, // Align to the top-right corner
-    zIndex: 1000, // Ensure it stays on top
+    top: 20,
+    right: 20,
+    zIndex: 1000,
   },
   menuButton: {
     backgroundColor: "#E6E6FA",
@@ -60,16 +76,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#73D",
     borderRadius: 5,
     marginTop: 10,
-    elevation: 5, // Adding shadow for better dropdown visibility
+    elevation: 5,
     zIndex: 2000,
   },
   dropdownItem: {
     paddingVertical: 15,
     paddingHorizontal: 20,
-    minWidth: 60,
-    height: 50,
+    minWidth: 100,
     justifyContent: "center",
-    alignItems: "center",
     borderBottomWidth: 1,
     borderBottomColor: "#fff",
   },
