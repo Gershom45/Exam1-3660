@@ -83,15 +83,15 @@ const styles = StyleSheet.create({
   dropdown: {
     position: "absolute",
     top: -20, // Adjusted from -30
-    right: 50, // Reduced from 70
+    right: 40, // Reduced from 70
     backgroundColor: "#73D",
     borderRadius: 5,
     marginTop: 10,
     elevation: 5,
-    zIndex: 2000,
+    zIndex: 3000,
   },
   dropdownItem: {
-    paddingVertical: 15,
+    paddingVertical: 13,
     paddingHorizontal: 20,
     minWidth: 100,
     justifyContent: "center",
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#fff",
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#FFF",
     fontWeight: "bold",
   },
